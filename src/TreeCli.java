@@ -815,6 +815,9 @@ public class TreeCli {
                 currentNode = newCurrentNode;
             }
 
+            setCurrentNode(currentNode);
+            setZoomNode(currentNode.parent !=null? currentNode.parent: currentNode);
+
             return currentNode;
         }
 
