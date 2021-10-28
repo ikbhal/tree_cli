@@ -408,6 +408,7 @@ public class TreeCli {
         String cmd = null;
         System.out.print(">");
         cmd = scanner.nextLine();
+        cmd = cmd.trim().toLowerCase();
         int num = -1;
         if(cmd.equals("help") || cmd.equals("h")){
             num = 20;
@@ -649,6 +650,42 @@ public class TreeCli {
         }
     }
 
+
+    public static  int getSearchCmdNum(){
+        String cmd = scanner.nextLine();
+        cmd = cmd.trim().toLowerCase();
+
+        int num=-1;
+        System.out.println("0.quit(q) 1.previous(p) 2.next(s) 3.make current search node as current(c) node");
+        if(cmd.equals("previous") || cmd.equals("p")){
+            // previous
+            num = 1;
+        } else if(cmd.equals("next") || cmd.equals("n")){
+            // next
+            num = 2;
+        } else if(cmd.equals("set_current_node")
+                || cmd.equals("set") || cmd.equals("current")
+                || cmd.equals("c") || cmd.equals("s")
+        ){
+            // set search node as current node
+//                    currentNode = searchNode;
+//            setCurrentNode(currentNode);
+//            if(currentNode.parent != null){
+//                setZoomNode(currentNode.parent);
+//            }else {
+//                setZoomNode(currentNode);
+//            }
+            num = 3;
+        }else{
+            try {
+                num = Integer.parseInt(cmd);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+        return num;
+    }
+
     private static void search() {
         /*
         * ask for input
@@ -659,7 +696,7 @@ public class TreeCli {
         * quit /0: quit search
         * */
         System.out.println("search-> enter text to search: ");
-        scanner.nextLine();// skip enter key entered for this search command
+//        scanner.nextLine();// skip enter key entered for this search command
         String input = scanner.nextLine();
         List<Node> searchList = root.search(input);
         if(searchList == null || searchList.isEmpty()){
@@ -667,12 +704,15 @@ public class TreeCli {
             return;
         }
         int ci = 0;
-        Node searchNode = null;
-        while(true){
-            System.out.println("0.quit search 1.previous 2.next 3.make current search node as curren tnode");
-            int num ;
-            num = scanner.nextInt();
+        Node searchNode = searchList.get(0);
+        System.out.println("search result node: ");
+        searchNode.printWithNoteCompleteNoChildren();
+
+        boolean searchContinueFlag = true;
+        while(searchContinueFlag){
+            int num = getSearchCmdNum();
             if(num ==0){ // quit search
+                searchContinueFlag = false;
                 break;
             }
             switch(num){
@@ -680,6 +720,7 @@ public class TreeCli {
                     System.out.println("previous search");
                     if(ci ==0 ){
                         System.out.println("no previous search");
+                        searchContinueFlag = false;
                     }else {
                         ci = ci -1;
                         searchNode = searchList.get(ci);
@@ -692,6 +733,7 @@ public class TreeCli {
                     System.out.println("next search");
                     if(ci ==searchList.size()-1 ){
                         System.out.println("no next search");
+                        searchContinueFlag = false;
                     }else {
                         ci = ci + 1;
                         searchNode = searchList.get(ci);
@@ -701,6 +743,9 @@ public class TreeCli {
                     }
                     break;
                 case 3: // set current node
+                    setCurrentNode(searchNode);
+                    setZoomNode(searchNode.parent!=null? searchNode.parent: searchNode);
+                    searchContinueFlag = false;
                     break;
                 default:
                     System.out.println("Invalid search option");
