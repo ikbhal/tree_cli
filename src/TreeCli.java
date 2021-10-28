@@ -190,30 +190,36 @@ public class TreeCli {
         System.out.println("TreeCli");
 
         while(true) {
+            System.out.println("***Root***");
+            root.print();
             System.out.println("Main Menu: ("
                 + " 0 exit "
                 + " 1.display current node"
-                + " 2.add child "
-                + " 3. add sibling"
+                + " 2.add child (c)"
+                + " 3. add sibling(s)"
                 + " 4. delete node "
                 + " 5. edit node "
                 + "\n"
-                + " 6. dispaly root "
-                + " 7. edit text current node "
-                + " 8. zoom in "
-                + " 9. zoom out"
+                + " 6. dispaly root(r) "
+                + " 7. edit text current node(t) "
+                + " 8. zoom in(z) "
+                + " 9. zoom out(o)"
                 + " 10. zoom node print"
                 + "\n"
-                + " 11. search "
+                + " 11. search (f)"
                 + "12. view note "
-                + " 13. edit note "
-                + " 14. toggle complete "
+                + " 13. edit note(n) "
+                + " 14. toggle complete(d) "
                 + " 15 navigation"
-                + " 16 toggle collapse "
+                + " 16 toggle collapse(c) "
+                + " 17 navigation up"
+                + " 18 navigation down"
                 + " )");
 
             scanner = new Scanner(System.in);
-            int num = scanner.nextInt();
+
+            int num = getCommandNum();
+
             switch (num) {
                 case 0: //exit
                     System.out.println("Exiting");
@@ -225,7 +231,7 @@ public class TreeCli {
                     break;
                 case 2: // add child
                     System.out.print("Add child-> enter text:");
-                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
+//                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
                     text = scanner.nextLine();
                     newNode = currentNode.addChild(text);
                     currentNode = newNode;
@@ -233,7 +239,7 @@ public class TreeCli {
                 case 3: //add sibling
                     System.out.print("adding sibling->");
                     System.out.print("enter text:");
-                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
+//                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
                     text = scanner.nextLine();
                     newNode = currentNode.addSibling(text);
 //                    currentNode = newNode;
@@ -251,7 +257,7 @@ public class TreeCli {
                     break;
                 case 7: // edit text current node
                     System.out.print("Edit current node -> enter text:");
-                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
+//                    scanner.nextLine();// will eat new line enter during entering menu number<enter>
                     text = scanner.nextLine();
                     currentNode.setTitle(text);
                     break;
@@ -286,6 +292,14 @@ public class TreeCli {
                 case 16: // toggle collapse
                     toggleCollapse();
 
+                case 17: // navigation up or  u key
+                    navigationUp();
+                    break;
+
+                case 18: // navigation down or d key
+                    navigationDown();
+                    break;
+
                 default:
                     System.out.println("invalid or not implemented yet");
                     break;
@@ -293,6 +307,55 @@ public class TreeCli {
             }
         }
     }
+
+    public static int getCommandNum(){
+        String cmd = null;
+        cmd = scanner.nextLine();
+        int num = -1;
+        if(cmd.equals("c")){ //add child
+            num = 2;
+        }
+        else if(cmd.equals("s")){ //add sibling
+             num = 3;
+        }
+        else if(cmd.equals("r")){ // display root
+            num = 6;
+        }
+        else if(cmd.equals("t")){ // edit text/title node
+            num = 7;
+        }
+        else if(cmd.equals("z")){ // zoom in
+             num = 8;
+        }
+        else if(cmd.equals("o")) { // zoom out
+            num =9;
+        }
+        else if(cmd.equals("f")){ //search or find
+            num = 11;
+        }
+        else if(cmd.equals("n")){ // edit note
+            num = 12;
+        }
+        else if(cmd.equals("d")) { //toggle complete/done
+            num = 14;
+        }
+        else if(cmd.equals("c")){ // toggle collapse /visible
+            num = 16;
+        }
+        else if(cmd.equals("u")){
+            num = 17;
+        } else if(cmd.equals("d")){
+            num = 18;
+        }else {
+            try {
+                num = Integer.parseInt(cmd);
+            }catch(Exception e){
+                System.out.println(e);
+            }
+        }
+        return num;
+    }
+
 
     static void toggleCollapse() {
         currentNode.collapse = !currentNode.collapse;
