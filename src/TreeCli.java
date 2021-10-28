@@ -1,5 +1,6 @@
 
 
+import java.io.File;
 import java.util.*;
 
 class Node {
@@ -123,12 +124,11 @@ class Node {
         printSpaceForLevel(level);
         String prefix = getNodePrintPrefix(node);
         System.out.println(prefix + "(id:" + node.id + ", text: " + node.title +")");
-        if(node.childrenMap.isEmpty())
+        if(node.childrenList.isEmpty())
             return;
         if(node.collapse) // collapse means -> dont show children
             return;
-        for(Integer childId:node.childrenMap.keySet()){
-            Node child = node.childrenMap.get(childId);
+        for(Node child: node.childrenList){
             print(child, level+1);
         }
     }
@@ -189,35 +189,17 @@ public class TreeCli {
     public static void main(String[] args){
         System.out.println("TreeCli");
 
+        // initial test data
+
+        String testFilepath = "D:\\git2\\tree_cli\\src\\test.tab.txt";;
+        root = loadTreeFromFile(testFilepath);
+        setZoomNode(root);
+        setCurrentNode(root);
+        scanner = new Scanner(System.in);
+
         while(true) {
-            System.out.println("***Root***");
-            root.print();
-            System.out.println("Main Menu: ("
-                + " 0 exit "
-                + " 1.display current node"
-                + " 2.add child (c)"
-                + " 3. add sibling(s)"
-                + " 4. delete node "
-                + " 5. edit node "
-                + "\n"
-                + " 6. dispaly root(r) "
-                + " 7. edit text current node(t) "
-                + " 8. zoom in(z) "
-                + " 9. zoom out(o)"
-                + " 10. zoom node print"
-                + "\n"
-                + " 11. search (f)"
-                + "12. view note "
-                + " 13. edit note(n) "
-                + " 14. toggle complete(d) "
-                + " 15 navigation"
-                + " 16 toggle collapse(c) "
-                + " 17 navigation up"
-                + " 18 navigation down"
-                + " )");
-
-            scanner = new Scanner(System.in);
-
+//            System.out.println("***Root***");
+//            root.print();
             int num = getCommandNum();
 
             switch (num) {
@@ -286,20 +268,30 @@ public class TreeCli {
                 case 14: //toggle complete
                     toggleComplete();
                     break;
-                case 15://navigation
-                    navigation();
+                case 15://navigation go to node
+//                    navigation();
+                    navigationGotoIdHandler();
+                    zoomNode.print();
                     break;
                 case 16: // toggle collapse
                     toggleCollapse();
 
                 case 17: // navigation up or  u key
                     navigationUp();
+                    zoomNode.print();
                     break;
 
                 case 18: // navigation down or d key
                     navigationDown();
+                    zoomNode.print();
                     break;
 
+                case 19: //load from file
+                    loadFromFileCaseHandler();
+                    break;
+                case 20: // help
+                    helpHanlder();
+                    break;
                 default:
                     System.out.println("invalid or not implemented yet");
                     break;
@@ -308,45 +300,78 @@ public class TreeCli {
         }
     }
 
+    private static void helpHanlder() {
+        System.out.println("Help Page");
+        System.out.println("Main Menu: ("
+            + " 0 exit "
+            + " 1.display current node"
+            + " 2.add child (c)"
+            + " 3. add sibling(s)"
+            + " 4. delete node "
+            + " 5. edit node "
+            + "\n"
+            + " 6. dispaly root(r) "
+            + " 7. edit text current node(t) "
+            + " 8. zoom in(z) "
+            + " 9. zoom out(o)"
+            + " 10. zoom node print"
+            + "\n"
+            + " 11. search (f)"
+            + "12. view note "
+            + " 13. edit note(n) "
+            + " 14. toggle complete(complete) "
+            + " 15 navigation to node id(g)"
+            + " 16 toggle collapse(v or visible) "
+            + " 17 navigation up(u)"
+            + " 18 navigation down(d)"
+            + " 19 load from file (l)"
+            + " )");
+    }
+
+    private static void loadFromFileCaseHandler() {
+        System.out.println("Load from file -> file: ");
+        // D:\git2\tree_cli\src\test.tab.txt
+        String filePath = scanner.nextLine();
+        root = loadTreeFromFile(filePath);
+        setZoomNode(root);
+        setCurrentNode(root);
+        root.print();
+    }
+
     public static int getCommandNum(){
         String cmd = null;
+        System.out.print(">");
         cmd = scanner.nextLine();
         int num = -1;
-        if(cmd.equals("c")){ //add child
+        if(cmd.equals("help") || cmd.equals("h")){
+            num = 20;
+        } else if(cmd.equals("c")){ //add child
             num = 2;
-        }
-        else if(cmd.equals("s")){ //add sibling
+        } else if(cmd.equals("s")){ //add sibling
              num = 3;
-        }
-        else if(cmd.equals("r")){ // display root
+        } else if(cmd.equals("r")){ // display root
             num = 6;
-        }
-        else if(cmd.equals("t")){ // edit text/title node
+        } else if(cmd.equals("t")){ // edit text/title node
             num = 7;
-        }
-        else if(cmd.equals("z")){ // zoom in
+        } else if(cmd.equals("z")){ // zoom in
              num = 8;
-        }
-        else if(cmd.equals("o")) { // zoom out
+        } else if(cmd.equals("o")) { // zoom out
             num =9;
-        }
-        else if(cmd.equals("f")){ //search or find
+        } else if(cmd.equals("f")){ //search or find
             num = 11;
-        }
-        else if(cmd.equals("n")){ // edit note
+        } else if(cmd.equals("n")){ // edit note
             num = 12;
-        }
-        else if(cmd.equals("d")) { //toggle complete/done
+        } else if(cmd.equals("complete")) { //toggle complete/done
             num = 14;
-        }
-        else if(cmd.equals("c")){ // toggle collapse /visible
+        } else if(cmd.equals("v")){ // toggle collapse /visible
             num = 16;
-        }
-        else if(cmd.equals("u")){
+        } else if(cmd.equals("u")){
             num = 17;
         } else if(cmd.equals("d")){
             num = 18;
-        }else {
+        } else if(cmd.equals("l")) { // load from file
+            num = 20;
+        } else {
             try {
                 num = Integer.parseInt(cmd);
             }catch(Exception e){
@@ -356,39 +381,15 @@ public class TreeCli {
         return num;
     }
 
-
     static void toggleCollapse() {
         currentNode.collapse = !currentNode.collapse;
     }
 
-    private static void navigation() {
-        System.out.println("Navigation:");
-        System.out.println("0.quit 1. down 2.up 3. go to node id ");
-        int num;
-        num = scanner.nextInt();
-        int id = -1;
-        if(num ==0){
-            System.out.println("quit navigation");
-            return;
-        }
-        switch(num){
-            case 1:
-                System.out.println("todo down");
-                navigationDown();
-                break;
-            case 2: // up
-//                System.out.println("todo up");
-                navigationUp();
-                break;
-            case 3:// got to node id
-                System.out.print("enter id(num):");
-                id = scanner.nextInt();
-                setCurrentNodeToNodeId(id);
-                break;
-            default: //
-                System.out.println("Invalid option");
-                break;
-        }
+    private static void navigationGotoIdHandler() {
+        int id;
+        System.out.print("enter id(num):");
+        id = scanner.nextInt();
+        setCurrentNodeToNodeId(id);
     }
 
     static void navigationUp(){
@@ -466,26 +467,39 @@ public class TreeCli {
         boolean haveChildren = !currentNode.childrenList.isEmpty();
         boolean haveParent = currentNode.parent != null;
         Node parent = currentNode.parent;
-        boolean haveNextSibling = parent !=null ? (parent.childrenList.indexOf(currentNode) < parent.childrenList.size()-1): false;
+        boolean haveNextSibling = haveParent ? (parent.childrenList.indexOf(currentNode) < parent.childrenList.size()-1): false;
         if((isCollapse ||! haveChildren ) && haveNextSibling){ // have next sbiling, does not have children or collapse then set next sibling as current node
             int ci = parent.childrenList.indexOf(currentNode);
             Node nextSibling = parent.childrenList.get(ci+1);
-            setCurrentNode(nextSibling);
             setZoomNode(currentNode.parent);
+            setCurrentNode(nextSibling);
         }
         else if(!isCollapse && haveChildren) { //have children, not collapse then first child be current node, zoom node current node
             Node oldCurrentNode = currentNode;
             setZoomNode(oldCurrentNode);
             Node firstChild = currentNode.childrenList.get(0);
             setCurrentNode(firstChild);
-        }else if(haveChildren){ // (collapse or no children) and does not have next sibling then parent as current node, zoom node parnet.parent
+        }else if((!haveChildren || isCollapse) && !haveNextSibling){ // (collapse or no children) and does not have next sibling then parent as current node, zoom node parnet.parent
             // TODO not correct; improve further  -> follow traverse of l root right
-            setCurrentNode(currentNode.parent);
-            if(currentNode.parent != null) {
-                setZoomNode(currentNode.parent);
-            }else {
-                setZoomNode(currentNode);
+            Node parentNextSibling = null;
+
+            while(parent !=null && parent.parent !=null) {
+                int pi = parent.parent.childrenList.indexOf(parent);
+                if (pi < parent.parent.childrenList.size() - 1) {
+                    currentNode = parent.parent.childrenList.get(pi + 1);
+                    setCurrentNode(currentNode);
+                    if(currentNode.parent != null){
+                        setZoomNode(currentNode.parent);
+                    }else{
+                        setZoomNode(currentNode);
+                    }
+                    break;
+                } else {
+                    // parent is last child of parent.parent
+                    parent = parent.parent;
+                }
             }
+
         }
     }
 
@@ -693,5 +707,54 @@ public class TreeCli {
 
         return null;
 
+    }
+
+    public static int spaceCount(String s){
+        int sc =0;
+        int i;
+        for(i=0;i<s.length();i++){
+            if(!Character.isWhitespace(s.charAt(i)))
+                break;
+            sc++;
+
+        }
+        return sc;
+    }
+
+    public static Node loadTreeFromFile(String filePath){
+        System.out.println("loadTreeFromFile filename: " + filePath);
+        Node node = null;
+        Node prevNode = null;
+        Node root = new Node("main root");
+        Node currentNode = root;
+        prevNode = currentNode;
+        Node parentNode = root;
+        try {
+            Stack<Node> stack = new Stack<Node>();
+            Scanner in = new Scanner(new File(filePath));
+            int prevsc = -1;
+            while (in.hasNext()) {
+                String l = in.nextLine();
+                int sc = spaceCount(l);
+                String title = l.trim();
+//                System.out.println("psc:" + prevsc + ", sc:" + sc + ", title:" + title);
+                node = new Node(title);
+                if (prevsc < sc) {
+                    stack.push(currentNode);
+                    prevNode.addChild(node);
+                    currentNode = prevNode;
+                } else if (prevsc == sc) {
+                    currentNode.addChild(node);
+                } else { //prevsc > sc -> pop
+                    currentNode = stack.pop();
+                    currentNode.addChild(node);
+                }
+                prevsc = sc;
+                prevNode = node;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return root;
     }
 }
