@@ -1,11 +1,13 @@
 
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 class Node {
     static int nodeIdSeq=0;
-    static int spacesForLevel = 4;
+    static int SPACES_FOR_LEVEL = 4;
     int id;
     String title; //like title
     boolean competed;
@@ -87,7 +89,7 @@ class Node {
     }
 
     public static void printSpaceForLevel(int level){
-        int numSpaces = level * spacesForLevel;
+        int numSpaces = level * SPACES_FOR_LEVEL;
         printSpaces(numSpaces);
     }
     public void print() {
@@ -292,11 +294,75 @@ public class TreeCli {
                 case 20: // help
                     helpHanlder();
                     break;
+                case 21: // export e, save s
+                    exportHandler();
+                    break;
                 default:
                     System.out.println("invalid or not implemented yet");
                     break;
 
             }
+        }
+    }
+
+    private static void exportHandler() {
+        System.out.println(">export file path: ");
+        String filePath = null;
+//        scanner.nextLine();
+//        scanner.nextLine();
+        filePath = scanner.nextLine();
+        exportToFile(filePath);
+    }
+
+    public static String getWord(String prompt, String requireMessage) {
+        String word = null;
+        int retry = 3;
+        for(retry=3;retry>0; retry--) {
+            word = scanner.nextLine();
+            if (word == null || word.trim().isEmpty()) {
+                System.out.println(requireMessage);
+                continue;
+            }
+        }
+        return word;
+    }
+
+    private static void exportToFile(String filePath) {
+        System.out.println("> export root fo file path: " + filePath);
+        if(filePath == null || filePath.trim().isEmpty()){
+            System.out.println("file path is empty , can not save to empty file name");
+            return ;
+        }
+        FileWriter fw =  null;
+        try {
+            fw = new FileWriter(new File(filePath));
+
+            exportToFileWriter(root,0, fw);
+            fw.close();
+            System.out.println("****Exported success *** ");
+        }catch(Exception e){
+            e.printStackTrace();;
+        }
+    }
+
+    private static void exportToFileWriter(Node node, int level,  FileWriter fw) {
+        try {
+            // print spaces
+            writeLevelSpacesToFileWriter(level, fw);
+            fw.write(node.title);
+            fw.write('\n');
+            for(Node child : node.childrenList){
+                exportToFileWriter(child, level+1, fw);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeLevelSpacesToFileWriter(int level, FileWriter fw) throws IOException {
+        int spaces = level * Node.SPACES_FOR_LEVEL;
+        for(int i=0;i<spaces;i++){
+            fw.write(' ');
         }
     }
 
@@ -370,7 +436,9 @@ public class TreeCli {
         } else if(cmd.equals("d")){
             num = 18;
         } else if(cmd.equals("l")) { // load from file
-            num = 20;
+            num = 19;
+        } else if(cmd.equals("export") || cmd.equals("e") || cmd.equals("s") || cmd.equals("save") ){
+            num = 21;
         } else {
             try {
                 num = Integer.parseInt(cmd);
